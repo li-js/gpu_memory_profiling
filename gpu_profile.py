@@ -2,7 +2,7 @@ import datetime
 import linecache
 import os
 
-#os.environ['CUDA_LAUNCH_BLOCKING']='1'
+os.environ['CUDA_LAUNCH_BLOCKING']='1'
 
 #import pynvml3
 from py3nvml import py3nvml
