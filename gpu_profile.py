@@ -64,14 +64,16 @@ def gpu_profile(frame, event, arg):
             module_name = frame.f_globals["__name__"]
             lineno = frame.f_lineno
             
-            if 'gpu_profile' not in os.path.dirname(os.path.abspath(filename)):
+            #only profile codes within the parenet folder, otherwise there are too many function calls into other pytorch scripts
+            #need to modify the key words below to suit your case.
+            if 'gpu_memory_profiling' not in os.path.dirname(os.path.abspath(filename)):   
                 lineno = None  # skip current line evaluation
 
             if ('car_datasets' in filename
                     or '_exec_config' in func_name
                     or 'gpu_profile' in module_name
                     or 'tee_stdout' in module_name):
-                lineno = None  # skip current
+                lineno = None  # skip othe unnecessary lines
             
             return gpu_profile
 
