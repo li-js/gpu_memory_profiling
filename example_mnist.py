@@ -1,7 +1,7 @@
 from __future__ import print_function
 import os
-os.environ['CUDA_VISIBLE_DEVICES']='0'
-os.environ['GPU_DEBUG']='0'
+os.environ['CUDA_VISIBLE_DEVICES']='2'
+os.environ['GPU_DEBUG']='2'
 
 import argparse
 import torch
@@ -45,7 +45,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 
-        #gpu_profile.gpu_profile(frame=sys._getframe(), event='line', arg=None)
+        #gpu_profile(frame=sys._getframe(), event='line', arg=None)
 
 def test(args, model, device, test_loader):
     model.eval()
@@ -92,14 +92,14 @@ def main():
 
     kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
+        datasets.MNIST('./data', train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
         batch_size=args.batch_size, shuffle=True, **kwargs)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
+        datasets.MNIST('./data', train=False, transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
@@ -108,12 +108,12 @@ def main():
 
     model = Net().to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-
-    for epoch in range(1, 2):
-        sys.settrace(gpu_profile)
+   
+    for epoch in range(1, args.epochs+1):    
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
 
 
 if __name__ == '__main__':
+    sys.settrace(gpu_profile)
     main()
