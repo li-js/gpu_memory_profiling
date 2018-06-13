@@ -12,6 +12,8 @@ This code depends on [py3nvml](https://github.com/fbcotter/py3nvml). Pip install
 pip install py3nvml
 ```
 
+Tested with pytorch version 0.4.0 and py3nvml verion 0.2.0
+
 ### Acknowledgement
 The gpu_profile.py is a modified version of [this script](https://gist.github.com/MInner/8968b3b120c95d3f50b8a22a74bf66bc).
 
