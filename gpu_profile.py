@@ -7,13 +7,21 @@ os.environ['CUDA_LAUNCH_BLOCKING']='1'
 #import pynvml3
 from py3nvml import py3nvml
 import torch
+import socket
 
+# different settings
 print_tensor_sizes = False
-last_tensor_sizes = set()
-gpu_profile_fn = f'{datetime.datetime.now():%d-%b-%y-%H-%M-%S}-gpu_mem_prof.txt'
+use_incremental = False
+
+
 if 'GPU_DEBUG' in os.environ:
+    gpu_profile_fn = f"Host_{socket.gethostname()}_gpu{os.environ['GPU_DEBUG']}_mem_prof-{datetime.datetime.now():%d-%b-%y-%H-%M-%S}.prof.txt"
     print('profiling gpu usage to ', gpu_profile_fn)
 
+
+## Global variables
+last_tensor_sizes = set()
+last_meminfo_used = 0
 lineno = None
 func_name = None
 filename = None
@@ -23,6 +31,7 @@ module_name = None
 def gpu_profile(frame, event, arg):
     # it is _about to_ execute (!)
     global last_tensor_sizes
+    global last_meminfo_used
     global lineno, func_name, filename, module_name
 
     if event == 'line':
@@ -35,11 +44,14 @@ def gpu_profile(frame, event, arg):
                 line = linecache.getline(filename, lineno)
                 where_str = module_name+' '+func_name+':'+str(lineno)
 
+                new_meminfo_used = meminfo.used
+                mem_display = new_meminfo_used-last_meminfo_used if use_incremental else new_meminfo_used
                 with open(gpu_profile_fn, 'a+') as f:
                     f.write(f"{where_str:<50}"
-                            f":{meminfo.used/1024**2:<7.1f}Mb "
+                            f":{(mem_display)/1024**2:<7.1f}Mb "
                             f"{line.rstrip()}\n")
 
+                    last_meminfo_used = new_meminfo_used
                     if print_tensor_sizes is True:
                         for tensor in get_tensors():
                             if not hasattr(tensor, 'dbg_alloc_where'):
